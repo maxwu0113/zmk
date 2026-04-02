@@ -73,6 +73,39 @@ config ZMK_STUDIO_TRANSPORT_UART_RX_PRIORITY
 
 endif
 
+DT_CHOSEN_ZMK_STUDIO_RPC_USB_CDC := zmk,studio-rpc-usb-cdc
+
+config ZMK_STUDIO_TRANSPORT_USB_CDC
+    bool "USB CDC ACM"
+    select SERIAL
+    select RING_BUFFER
+    select USB_DEVICE_STACK
+    select USB_CDC_ACM
+    select UART_INTERRUPT_DRIVEN
+    depends on ZMK_USB
+    default y if $(dt_chosen_enabled,$(DT_CHOSEN_ZMK_STUDIO_RPC_USB_CDC))
+    help
+      Enable ZMK Studio RPC transport over USB CDC ACM (virtual serial port).
+      This allows cross-platform configuration tools on Windows, macOS, Linux,
+      iOS, and Android to modify the keyboard layout over USB without reflashing
+      firmware. A devicetree overlay must define the chosen node
+      zmk,studio-rpc-usb-cdc pointing to a zephyr,cdc-acm-uart compatible
+      device. The studio-rpc-usb-cdc snippet provides a ready-made overlay.
+
+if ZMK_STUDIO_TRANSPORT_USB_CDC
+
+config ZMK_STUDIO_TRANSPORT_USB_CDC_RX_STACK_SIZE
+    int "USB CDC RX Stack Size"
+    depends on !UART_INTERRUPT_DRIVEN
+    default 512
+
+config ZMK_STUDIO_TRANSPORT_USB_CDC_RX_PRIORITY
+    int "USB CDC RX Thread Priority"
+    depends on !UART_INTERRUPT_DRIVEN
+    default 9
+
+endif
+
 config ZMK_STUDIO_TRANSPORT_BLE
     bool "BLE (GATT)"
     select RING_BUFFER
